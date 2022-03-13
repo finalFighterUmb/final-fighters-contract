@@ -24,9 +24,9 @@ contract FinalFighters is ERC721Enumerable, Ownable {
         setBaseURI(initBaseURI);
     }
 
-    // public
     function mint(uint mintAmount) public payable {
         require(!paused, "the contract is paused");
+        uint256 supply = totalSupply();
         require(mintAmount > 0, "need to mint at least 1 NFT");
         require(mintAmount <= maxMintAmount, "max mint amount per session exceeded");
         require(totalSupply() + mintAmount <= maxSupply, "max NFT limit exceeded");
@@ -34,10 +34,9 @@ contract FinalFighters is ERC721Enumerable, Ownable {
         if (msg.sender != owner()) {
             if(onlyWhitelisted) {
                 require(isWhitelisted(msg.sender), "user is not whitelisted");
-                uint256 ownerMintedCount = addressMintedBalance[msg.sender];
-                //TODO: Should limit only apply to whitelisted or no?? maybe to everyone except admin ??
-                require(ownerMintedCount + _mintAmount <= nftPerAddressLimit, "max NFT per address exceeded");
             }
+            uint256 ownerMintedCount = addressMintedBalance[msg.sender];
+            require(ownerMintedCount + mintAmount <= nftPerAddressLimit, "max NFT per address exceeded");
             require(msg.value >= cost * mintAmount, "insufficient funds");
         }
 
@@ -73,8 +72,8 @@ contract FinalFighters is ERC721Enumerable, Ownable {
         );
 
         return bytes(_baseURI()).length > 0 ?
-            string(abi.encodePacked(_baseURI(), tokenId.toString(), baseExtension)) :
-            "";
+        string(abi.encodePacked(_baseURI(), tokenId.toString(), baseExtension)) :
+        "";
     }
 
     function setNftPerAddressLimit(uint256 _limit) public onlyOwner {
